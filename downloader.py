@@ -27,14 +27,23 @@ class ImageNet(object):
         self.list_dir = os.path.join(self.root, 'list')
         self.wnid = ""
         os.makedirs(self.root, exist_ok=True)
-        os.makedirs(self.list_dir, exist_ok=True)
         os.makedirs(self.img_dir, exist_ok=True)
+        os.makedirs(self.list_dir, exist_ok=True)
 
     def _check_data(self, data):
+        """
+        リクエストで取得したデータが不正なデータかどうかチェックする
+        間違ったwnidを指定した場合、b'Invalid url!'が返ってくる
+        """
         INVALID_DATA = b'Invalid url!'
         assert data != INVALID_DATA, "Invalid wnid."
 
     def _check_wnid(self, wnid):
+        """
+        wnidの基本的な形式をチェックする
+        wnidはnから始まりそのあとに9桁の数字が並ぶ
+        数字の並びが有効な値かは確認が大変なのでチェックしない
+        """
         assert wnid[0] == 'n', 'Invalid wnid : {}'.format(wnid)
         assert len(wnid) == 9, 'Invalid wnid : {}'.format(wnid)
 
@@ -45,6 +54,15 @@ class ImageNet(object):
         return data_list
 
     def _make_imginfo(self, path):
+        """
+        fname url
+        fname url
+        .
+        .
+        のテキストファイルを
+        {fname : url, fname : url, ....}
+        の辞書形式に変換する
+        """
         imginfo = collections.OrderedDict()
         for line in self._make_list(path):
             fname, url = line.rstrip().split(None, 1)
@@ -59,7 +77,7 @@ class ImageNet(object):
                         if response.geturl() == invalid_url:
                             return None
 
-                html = response.read()
+                html = response.read() # binary -> str
         except:
             return None
 
@@ -81,7 +99,7 @@ class ImageNet(object):
                     write_format = "{} {}\n".format(fname, url)
                     f.write(write_format)
 
-    def _download_imgs(self, path, imginfo, verbose=False):
+    def _download_imgs(self, path, imginfo, limit=0, verbose=False):
         UNAVAILABLE_IMG_URL="https://s.yimg.com/pw/images/en-us/photo_unavailable.png"
         num_of_img = len(imginfo)
         n_saved = 0
@@ -102,10 +120,18 @@ class ImageNet(object):
             with open(out_path, 'wb') as f:
                 f.write(img)
             n_saved += 1
+
             if verbose:
                 print('\tsaved[{}] to {}'.format(n_saved, out_path))
 
+            if limit != 0 and limit <= n_saved:
+                break
+
     def wnid_children(self, wnid, recursive=False):
+        """
+        指定したwnidの下層のwnidを取得
+        recursive=Trueで最下層まで探索
+        """
         self._check_wnid(wnid)
         full = 0
         if recursive:
@@ -117,6 +143,9 @@ class ImageNet(object):
         return children # [parent, child, child, child....]
 
     def wnid_to_words(self, wnid):
+        """
+        wnidを対応するsynsetを取得
+        """
         self._check_wnid(wnid)
         data = self._get_data_with_url(self.WNID_TO_WORDS_URL.format(wnid))
         self._check_data(data)
@@ -125,7 +154,10 @@ class ImageNet(object):
         words = [word for word in words if word]
         return words
 
-    def download(self, wnid, verbose=False):
+    def download(self, wnid, limit=0, verbose=False):
+        """
+        指定したwnidに属する画像をimgフォルダに保存
+        """
         self._check_wnid(wnid)
         list_path = os.path.join(self.list_dir, wnid+'.txt')
         if not os.path.exists(list_path):
@@ -136,4 +168,4 @@ class ImageNet(object):
         img_dir = os.path.join(self.img_dir, wnid)
         os.makedirs(img_dir, exist_ok=True)
 
-        self._download_imgs(img_dir, imginfo, verbose)
+        self._download_imgs(img_dir, imginfo, limit, verbose)
