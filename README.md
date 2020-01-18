@@ -1,8 +1,7 @@
 ![logo](https://user-images.githubusercontent.com/35373553/72666208-63d7b900-3a53-11ea-8b5b-c4acffe078cc.png)
 
-
-# Python-ImageNet_Downloader
-Download image data from ImageNet.
+----
+Download image data from ImageNet with python.
 
 # Usage
 ### How to use example
