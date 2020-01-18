@@ -1,4 +1,4 @@
-![logo](https://user-images.githubusercontent.com/35373553/72666107-5a018600-3a52-11ea-8491-0aa51fe69a70.png)
+![logo](https://user-images.githubusercontent.com/35373553/72666208-63d7b900-3a53-11ea-8b5b-c4acffe078cc.png)
 
 
 # Python-ImageNet_Downloader
