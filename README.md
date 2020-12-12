@@ -6,9 +6,25 @@ Download image data from ImageNet with python.
 # Usage
 ### How to use example
 ```
-python example.py <WordnetID> -v
+usage: example.py [-h] [-root ROOT] [-limit LIMIT] [-r] [-v] wnid
+
+Download images from ImageNet.
+
+positional arguments:
+  wnid             download wnid
+
+optional arguments:
+  -h, --help       show this help message and exit
+  -root ROOT       root dir
+  -limit LIMIT     max save num
+  -r, --recursive  save recursive
+  -v, --verbose    show process message
 ```
-Start download images.
+
+```
+python example.py <WordnetID> -v -limit 5
+```
+Start download 5 images.
 
 ### How to use downloader module
 Sample code.
