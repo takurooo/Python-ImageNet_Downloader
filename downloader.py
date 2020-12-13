@@ -76,10 +76,9 @@ class ImageNet(object):
     def _http_get(self, url: str, invalid_urls: Optional[List[str]] = None) -> bytes:
         try:
             with request.urlopen(url) as response:
-                if invalid_urls is not None:
-                    for invalid_url in invalid_urls:
-                        if response.geturl() == invalid_url:
-                            return b""
+                if invalid_urls:
+                    if response.geturl() in invalid_urls:
+                        return b""
 
                 body = response.read()
         except:
@@ -135,9 +134,7 @@ class ImageNet(object):
         recursive=Trueで最下層まで探索
         """
         self._check_wnid(wnid)
-        full = 0
-        if recursive:
-            full = 1
+        full = 1 if recursive else 0
 
         wnid_children_url = self.WNID_CHILDREN_URL.format(wnid, full)
         data = self._http_get(wnid_children_url)
