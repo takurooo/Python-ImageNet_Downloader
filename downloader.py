@@ -4,17 +4,20 @@
 import os
 import codecs
 import collections
+import logging
 from urllib import request
 from typing import Optional, List, Dict
 
 # -------------------------------------------
 # global
 # -------------------------------------------
-
-
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())
 # -------------------------------------------
 # functions
 # -------------------------------------------
+
+
 class ImageNet(object):
     WNID_CHILDREN_URL = "http://www.image-net.org/api/text/wordnet.structure.hyponym?wnid={}&full={}"
     WNID_TO_WORDS_URL = "http://www.image-net.org/api/text/wordnet.synset.getwords?wnid={}"
@@ -100,30 +103,29 @@ class ImageNet(object):
                 for fname, url in zip(fnames, urls):
                     f.write(f"{fname} {url}\n")
 
-    def _download_imgs(self, path: str, imginfo: Dict[str, str], limit: int = 0, verbose: bool = False) -> None:
+    def _download_imgs(self, path: str, imginfo: Dict[str, str], limit: int = 0) -> None:
         UNAVAILABLE_IMG_URL = "https://s.yimg.com/pw/images/en-us/photo_unavailable.png"
         num_of_img = len(imginfo)
         n_saved = 0
         for i, (fname, url) in enumerate(imginfo.items()):
-            if verbose:
-                print('{:5}/{:5} fname: {}  url: {}'.format(i +
-                                                            1, num_of_img, fname, url))
+            logger.info(f'{i+1:5}/{num_of_img:5} fname: {fname}  url: {url}')
 
             out_path = os.path.join(path, fname+'.jpg')
             if os.path.exists(out_path):
+                logger.info("\talready exists")
                 continue
 
             img = self._http_get(url, [UNAVAILABLE_IMG_URL])
 
             if not img:
+                logger.info("\timage not available")
                 continue
 
             with open(out_path, 'wb') as f:
                 f.write(img)
             n_saved += 1
 
-            if verbose:
-                print('\tsaved[{}] to {}'.format(n_saved, out_path))
+            logger.info(f'\tsaved[{n_saved}] to {out_path}')
 
             if limit != 0 and limit <= n_saved:
                 break
@@ -156,7 +158,7 @@ class ImageNet(object):
         words = [word for word in words if word]
         return words
 
-    def download(self, wnid: str, limit: int = 0, verbose: bool = False) -> None:
+    def download(self, wnid: str, limit: int = 0) -> None:
         """
         指定したwnidに属する画像をimgフォルダに保存
         """
@@ -170,4 +172,9 @@ class ImageNet(object):
         img_dir = os.path.join(self.img_dir, wnid)
         os.makedirs(img_dir, exist_ok=True)
 
-        self._download_imgs(img_dir, imginfo, limit, verbose)
+        self._download_imgs(img_dir, imginfo, limit)
+
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.DEBUG,
+                        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')

@@ -4,15 +4,18 @@
 import os
 import argparse
 import downloader
+import logging
 
 # -------------------------------------------
 # global
 # -------------------------------------------
-
+logger = logging.getLogger(__name__)
 
 # -------------------------------------------
 # functions
 # -------------------------------------------
+
+
 def get_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Download images from ImageNet.")
@@ -33,14 +36,17 @@ def main(args: argparse.Namespace) -> None:
     verbose = args.verbose
     limit = args.limit
 
-    api = downloader.ImageNet(root_dir)
+    if verbose:
+        logging.basicConfig(level=logging.INFO,
+                            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
+    api = downloader.ImageNet(root_dir)
     if not args.recursive:
-        api.download(wnid, limit=limit, verbose=verbose)
+        api.download(wnid, limit=limit)
     else:
         wnids = api.wnid_children(wnid, recursive=True)
         for _wnid in wnids:
-            api.download(_wnid, limit=limit, verbose=verbose)
+            api.download(_wnid, limit=limit)
 
 
 # -------------------------------------------
