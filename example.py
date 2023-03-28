@@ -1,19 +1,12 @@
-# -------------------------------------------
-# import
-# -------------------------------------------
 import os
 import argparse
 import downloader
 import logging
 
-# -------------------------------------------
-# global
-# -------------------------------------------
+
 logger = logging.getLogger(__name__)
 
-# -------------------------------------------
-# functions
-# -------------------------------------------
+
 
 
 def get_args() -> argparse.Namespace:
@@ -49,8 +42,5 @@ def main(args: argparse.Namespace) -> None:
             api.download(_wnid, limit=limit)
 
 
-# -------------------------------------------
-# main
-# -------------------------------------------
 if __name__ == '__main__':
     main(get_args())

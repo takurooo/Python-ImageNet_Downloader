@@ -1,6 +1,3 @@
-# -------------------------------------------
-# import
-# -------------------------------------------
 import os
 import codecs
 import collections
@@ -8,14 +5,8 @@ import logging
 from urllib import request
 from typing import Optional, List, Dict
 
-# -------------------------------------------
-# global
-# -------------------------------------------
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
-# -------------------------------------------
-# functions
-# -------------------------------------------
 
 
 class ImageNet(object):
