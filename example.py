@@ -1,24 +1,22 @@
-import os
 import argparse
-import downloader
 import logging
+import os
+
+import downloader
 
 
 logger = logging.getLogger(__name__)
 
 
-
-
 def get_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Download images from ImageNet.")
+    parser = argparse.ArgumentParser(description="Download images from ImageNet.")
     parser.add_argument("wnid", type=str, help="download wnid")
     parser.add_argument("-root", type=str, help="root dir", default=None)
     parser.add_argument("-limit", type=int, help="max save num", default=0)
-    parser.add_argument("-r", "--recursive",
-                        action='store_true', help="save recursive")
-    parser.add_argument("-v", "--verbose", action='store_true',
-                        help="show process message")
+    parser.add_argument("-r", "--recursive", action="store_true", help="save recursive")
+    parser.add_argument(
+        "-v", "--verbose", action="store_true", help="show process message"
+    )
 
     return parser.parse_args()
 
@@ -30,8 +28,10 @@ def main(args: argparse.Namespace) -> None:
     limit = args.limit
 
     if verbose:
-        logging.basicConfig(level=logging.INFO,
-                            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        logging.basicConfig(
+            level=logging.INFO,
+            format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        )
 
     api = downloader.ImageNet(root_dir)
     if not args.recursive:
@@ -42,5 +42,5 @@ def main(args: argparse.Namespace) -> None:
             api.download(_wnid, limit=limit)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main(get_args())

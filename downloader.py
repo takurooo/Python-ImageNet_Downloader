@@ -1,24 +1,31 @@
-import os
 import codecs
 import collections
 import logging
+import os
+from typing import Dict, List, Optional
 from urllib import request
-from typing import Optional, List, Dict
+
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
 
 class ImageNet(object):
-    WNID_CHILDREN_URL = "http://www.image-net.org/api/text/wordnet.structure.hyponym?wnid={}&full={}"
-    WNID_TO_WORDS_URL = "http://www.image-net.org/api/text/wordnet.synset.getwords?wnid={}"
-    IMG_LIST_URL = "http://www.image-net.org/api/text/imagenet.synset.geturls.getmapping?wnid={}"
+    WNID_CHILDREN_URL = (
+        "http://www.image-net.org/api/text/wordnet.structure.hyponym?wnid={}&full={}"
+    )
+    WNID_TO_WORDS_URL = (
+        "http://www.image-net.org/api/text/wordnet.synset.getwords?wnid={}"
+    )
+    IMG_LIST_URL = (
+        "http://www.image-net.org/api/text/imagenet.synset.geturls.getmapping?wnid={}"
+    )
     # BBOX_URL="http://www.image-net.org/api/download/imagenet.bbox.synset?wnid={}"
 
     def __init__(self, root: Optional[str] = None):
         self.root = root or os.getcwd()
-        self.img_dir = os.path.join(self.root, 'img')
-        self.list_dir = os.path.join(self.root, 'list')
+        self.img_dir = os.path.join(self.root, "img")
+        self.list_dir = os.path.join(self.root, "list")
         self.wnid = ""
         os.makedirs(self.root, exist_ok=True)
         os.makedirs(self.img_dir, exist_ok=True)
@@ -29,7 +36,7 @@ class ImageNet(object):
         リクエストで取得したデータが不正なデータかどうかチェックする
         間違ったwnidを指定した場合、b'Invalid url!'が返ってくる
         """
-        INVALID_DATA = b'Invalid url!'
+        INVALID_DATA = b"Invalid url!"
         assert data != INVALID_DATA, "Invalid wnid."
 
     def _check_wnid(self, wnid: str) -> None:
@@ -38,16 +45,16 @@ class ImageNet(object):
         wnidはnから始まりそのあとに8桁の数字が並ぶ
         数字の並びが有効な値かは確認が大変なのでチェックしない
         """
-        assert wnid[0] == 'n', 'Invalid wnid : {}'.format(wnid)
-        assert len(wnid) == 9, 'Invalid wnid : {}'.format(wnid)
+        assert wnid[0] == "n", "Invalid wnid : {}".format(wnid)
+        assert len(wnid) == 9, "Invalid wnid : {}".format(wnid)
         try:
             _ = int(wnid[1:])
         except ValueError as e:
-            assert 0, 'Invalid wnid : {}'.format(wnid)
+            assert 0, "Invalid wnid : {}".format(wnid)
 
     def _list_from_file(self, path: str) -> List[str]:
         ret = []
-        with codecs.open(path, 'r', 'utf-8') as f:
+        with codecs.open(path, "r", "utf-8") as f:
             ret = [line.rstrip() for line in f]
         return ret
 
@@ -90,18 +97,20 @@ class ImageNet(object):
             # data = [fname_0, url_0, fname_1, url_1, .....]
             fnames = data[::2]  # [fname_0, fname_1, ...]
             urls = data[1::2]  # [url_0, url_1, ...]
-            with codecs.open(out_path, 'w', 'utf-8') as f:
+            with codecs.open(out_path, "w", "utf-8") as f:
                 for fname, url in zip(fnames, urls):
                     f.write(f"{fname} {url}\n")
 
-    def _download_imgs(self, path: str, imginfo: Dict[str, str], limit: int = 0) -> None:
+    def _download_imgs(
+        self, path: str, imginfo: Dict[str, str], limit: int = 0
+    ) -> None:
         UNAVAILABLE_IMG_URL = "https://s.yimg.com/pw/images/en-us/photo_unavailable.png"
         num_of_img = len(imginfo)
         n_saved = 0
         for i, (fname, url) in enumerate(imginfo.items()):
-            logger.info(f'{i+1:5}/{num_of_img:5} fname: {fname}  url: {url}')
+            logger.info(f"{i+1:5}/{num_of_img:5} fname: {fname}  url: {url}")
 
-            out_path = os.path.join(path, fname+'.jpg')
+            out_path = os.path.join(path, fname + ".jpg")
             if os.path.exists(out_path):
                 logger.info("\talready exists")
                 continue
@@ -112,11 +121,11 @@ class ImageNet(object):
                 logger.info("\timage not available")
                 continue
 
-            with open(out_path, 'wb') as f:
+            with open(out_path, "wb") as f:
                 f.write(img)
             n_saved += 1
 
-            logger.info(f'\tsaved[{n_saved}] to {out_path}')
+            logger.info(f"\tsaved[{n_saved}] to {out_path}")
 
             if limit != 0 and limit <= n_saved:
                 break
@@ -133,7 +142,7 @@ class ImageNet(object):
         data = self._http_get(wnid_children_url)
         self._check_data(data)
 
-        children = data.decode().replace('-', '').split()
+        children = data.decode().replace("-", "").split()
         return children  # [parent, child, child, child....]
 
     def wnid_to_words(self, wnid: str) -> List[str]:
@@ -145,7 +154,7 @@ class ImageNet(object):
         data = self._http_get(wnid_to_words_url)
         self._check_data(data)
 
-        words = data.decode().split('\n')
+        words = data.decode().split("\n")
         words = [word for word in words if word]
         return words
 
@@ -154,7 +163,7 @@ class ImageNet(object):
         指定したwnidに属する画像をimgフォルダに保存
         """
         self._check_wnid(wnid)
-        list_path = os.path.join(self.list_dir, wnid+'.txt')
+        list_path = os.path.join(self.list_dir, wnid + ".txt")
         if not os.path.exists(list_path):
             self._download_imglist(list_path, wnid)
 
@@ -167,5 +176,7 @@ class ImageNet(object):
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG,
-                        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    )
