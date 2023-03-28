@@ -1,0 +1,23 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+
+
+[dev-packages]
+black = "*"
+isort = "*"
+pre-commit = "*"
+pylint = "*"
+pytest = "*"
+pytest-mock = "*"
+
+[requires]
+python_version = "3.11"
+
+[scripts]
+test = "python -m pytest tests/ -v"
+format = "bash -xc 'black . && isort .'"
+lint = "pylint ./"
